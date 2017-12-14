@@ -33,6 +33,11 @@ i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 i_p.addParamValue('paper_figures',0,@(x)x == 1 || x == 0);
 i_p.addParamValue('status_messages',1,@(x)x == 1 || x == 0);
 
+i_p.addParamValue('atrous_segmentation',0,@(x)isnumeric(x) && x > 0);
+i_p.addParameter('structure_element_size', 5,@(x)isnumeric(x) && x > 1);
+i_p.addParameter('atrous_export_level',4,@(x)isnumeric(x) && x > 0);
+
+
 i_p.parse(exp_folder,varargin{:});
 
 %Add the folder with all the scripts used in this master program
@@ -69,8 +74,13 @@ end
 for i = 1:length(image_folders)
     I_file = fullfile(exp_folder,'individual_pictures',image_folders(i).name,filenames.focal_image);
     try
-        find_focal_adhesions(I_file,clean_opts);
-    catch
+        if (i_p.Results.atrous_segmentation)
+            find_focal_adhesions_atrous(I_file,clean_opts);
+        else
+            find_focal_adhesions(I_file,clean_opts);
+        end
+    catch ME
+        warning(ME.message);
     end
     disp(['Done with ',I_file]);
 end
